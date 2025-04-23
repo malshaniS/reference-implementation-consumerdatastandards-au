@@ -380,7 +380,7 @@ class AmendedAuthorisationMetrics extends AUTest {
 
         //Retrieve the third authorization code
         thirdAuthorisationCode = doConsentAmendmentAuthorisation(scopes, cdrArrangementId2,
-                AUConstants.AMENDED_SHARING_DURATION, auConfiguration.getAppInfoClientID())
+                AUConstants.DEFAULT_SHARING_DURATION, auConfiguration.getAppInfoClientID())
         Assert.assertNotNull(thirdAuthorisationCode)
 
         //Retrieve the third user access token and assert the CDR arrangement ID is the same.

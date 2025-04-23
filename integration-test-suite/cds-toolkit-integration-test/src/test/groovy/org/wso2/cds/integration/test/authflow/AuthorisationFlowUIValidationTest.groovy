@@ -17,6 +17,9 @@
  */
 package org.wso2.cds.integration.test.authflow
 
+import org.openqa.selenium.WebElement
+import org.openqa.selenium.support.ui.ExpectedConditions
+import org.openqa.selenium.support.ui.WebDriverWait
 import org.wso2.cds.test.framework.AUTest
 import org.wso2.cds.test.framework.automation.consent.AUBasicAuthAutomationStep
 import org.wso2.cds.test.framework.constant.AUAccountProfile
@@ -29,14 +32,20 @@ import org.openqa.selenium.By
 import org.testng.Assert
 import org.testng.annotations.Test
 
+import java.time.Duration
+
 
 /**
  * Authorisation Flow UI guidelines Tests.
  */
 class AuthorisationFlowUIValidationTest extends AUTest {
 
+    WebDriverWait wait
+
     @Test
-    void "TC0203003_Verify the permissions of a consent with common customer basic read scope"() {
+    void "TC0203003_Verify the permissions of a consent with common customer basic read scope for business profile"() {
+
+        auConfiguration.setPsuNumber(2)
 
         List<AUAccountScope> scopes = [AUAccountScope.BANK_CUSTOMER_BASIC_READ]
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
@@ -50,6 +59,8 @@ class AuthorisationFlowUIValidationTest extends AUTest {
                 .addStep { driver, context ->
                     AutomationMethod authWebDriver = new AutomationMethod(driver)
 
+                    wait = new WebDriverWait(driver, 60)
+
                     //If Profile Selection Enabled
                     if (auConfiguration.getProfileSelectionEnabled()) {
 
@@ -61,7 +72,19 @@ class AuthorisationFlowUIValidationTest extends AUTest {
                     def lbl_permission_header = driver.findElement(By.xpath(
                             AUPageObjects.LBL_PERMISSION_HEADER_ORG_PROFILE))
                     Assert.assertTrue(lbl_permission_header.isDisplayed())
+
+                    Assert.assertFalse(
+                            driver.findElements(By.xpath(AUPageObjects.LBL_PERMISSION_HEADER_CUST_DETAIL_READ_BUSINESS)).size() > 0,
+                            "Element 'Organisation profile and contact details' is present, but it should NOT be!"
+                    )
+                    Assert.assertFalse(
+                            driver.findElements(By.xpath(AUPageObjects.LBL_PERMISSION_HEADER_ORG_CONTACT_DETAILS)).size() > 0,
+                            "Element 'Organisation contact details' is present, but it should NOT be!"
+                    )
+
                     lbl_permission_header.click()
+                    wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.xpath(
+                            AUPageObjects.LBL_PERMISSION_LIST_ITEM_1)))
                     Assert.assertEquals(lbl_permission_header.findElement(By.xpath(
                             AUPageObjects.LBL_PERMISSION_LIST_ITEM_1)).getText(), AUConstants.LBL_AGENT_NAME_AND_ROLE)
                     Assert.assertEquals(lbl_permission_header.findElement(By.xpath(
@@ -87,9 +110,11 @@ class AuthorisationFlowUIValidationTest extends AUTest {
     }
 
     @Test
-    void "TC0203004_Verify the permissions of a consent with common customer detail read scope"() {
+    void "TC0203004_Verify the permissions of a consent with common customer detail read scope for business profile"() {
 
-        List<AUAccountScope> scopes = [AUAccountScope.BANK_CUSTOMER_DETAIL_READ]
+        auConfiguration.setPsuNumber(2)
+
+        List<AUAccountScope> scopes = [AUAccountScope.BANK_CUSTOMER_BASIC_READ, AUAccountScope.BANK_CUSTOMER_DETAIL_READ]
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
                 true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
@@ -110,8 +135,18 @@ class AuthorisationFlowUIValidationTest extends AUTest {
                     }
 
                     def lbl_permission_header = driver.findElement(By.xpath(
-                            AUPageObjects.LBL_PERMISSION_HEADER_ORG_PROFILE))
+                            AUPageObjects.LBL_PERMISSION_HEADER_CUST_DETAIL_READ_BUSINESS))
                     Assert.assertTrue(lbl_permission_header.isDisplayed())
+
+                    Assert.assertFalse(
+                            driver.findElements(By.xpath(AUPageObjects.LBL_PERMISSION_HEADER_ORG_PROFILE)).size() > 0,
+                            "Element 'Organisation profile' is present, but it should NOT be!"
+                    )
+                    Assert.assertFalse(
+                            driver.findElements(By.xpath(AUPageObjects.LBL_PERMISSION_HEADER_ORG_CONTACT_DETAILS)).size() > 0,
+                            "Element 'Organisation contact details' is present, but it should NOT be!"
+                    )
+
                     lbl_permission_header.click()
                     Assert.assertEquals(lbl_permission_header.findElement(By.xpath(
                             AUPageObjects.LBL_PERMISSION_LIST_ITEM_1)).getText(), AUConstants.LBL_AGENT_NAME_AND_ROLE)
@@ -167,8 +202,18 @@ class AuthorisationFlowUIValidationTest extends AUTest {
                     authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
 
                     def lbl_permission_header = driver.findElement(By.xpath(
-                            AUPageObjects.LBL_PERMISSION_HEADER_ACC_NAME))
+                            AUPageObjects.LBL_PERMISSION_HEADER_ACC_BASIC_READ))
                     Assert.assertTrue(lbl_permission_header.isDisplayed())
+
+                    Assert.assertFalse(
+                            driver.findElements(By.xpath(AUPageObjects.LBL_PERMISSION_HEADER_ACC_DETAIL_READ)).size() > 0,
+                            "Element 'Name, occupation, contact details' is present, but it should NOT be!"
+                    )
+                    Assert.assertFalse(
+                            driver.findElements(By.xpath(AUPageObjects.LBL_PERMISSION_HEADER_ACC_NUM_AND_FEATURES)).size() > 0,
+                            "Element 'Contact details' is present, but it should NOT be!"
+                    )
+
                     lbl_permission_header.click()
                     Assert.assertEquals(lbl_permission_header.findElement(By.xpath(
                             AUPageObjects.LBL_PERMISSION_LIST_ITEM_1)).getText(), AUConstants.LBL_NAME_OF_ACCOUNT)
@@ -187,7 +232,7 @@ class AuthorisationFlowUIValidationTest extends AUTest {
     void "TC0203006_Verify the permissions of a consent with bank accounts detail read scope"() {
 
         auConfiguration.setPsuNumber(2)
-        List<AUAccountScope> scopes = [AUAccountScope.BANK_ACCOUNT_DETAIL_READ]
+        List<AUAccountScope> scopes = [AUAccountScope.BANK_ACCOUNT_BASIC_READ, AUAccountScope.BANK_ACCOUNT_DETAIL_READ]
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
                 true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
@@ -199,6 +244,8 @@ class AuthorisationFlowUIValidationTest extends AUTest {
                 .addStep { driver, context ->
                     AutomationMethod authWebDriver = new AutomationMethod(driver)
 
+                    wait = new WebDriverWait(driver, 60)
+
                     //Select Profile and Accounts
                     selectProfileAndAccount(authWebDriver, AUAccountProfile.ORGANIZATION_B, true)
 
@@ -206,9 +253,21 @@ class AuthorisationFlowUIValidationTest extends AUTest {
                     authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
 
                     def lbl_permission_header = driver.findElement(By.xpath(
-                            AUPageObjects.LBL_PERMISSION_HEADER_ACC_BAL))
+                            AUPageObjects.LBL_PERMISSION_HEADER_ACC_DETAIL_READ))
                     Assert.assertTrue(lbl_permission_header.isDisplayed())
+
+                    Assert.assertFalse(
+                            driver.findElements(By.xpath(AUPageObjects.LBL_PERMISSION_HEADER_ACC_BASIC_READ)).size() > 0,
+                            "Element 'Name, occupation, contact details' is present, but it should NOT be!"
+                    )
+                    Assert.assertFalse(
+                            driver.findElements(By.xpath(AUPageObjects.LBL_PERMISSION_HEADER_ACC_NUM_AND_FEATURES)).size() > 0,
+                            "Element 'Contact details' is present, but it should NOT be!"
+                    )
+
                     lbl_permission_header.click()
+                    wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.xpath(
+                            AUPageObjects.LBL_PERMISSION_LIST_ITEM_1)))
                     Assert.assertEquals(lbl_permission_header.findElement(By.xpath(
                             AUPageObjects.LBL_PERMISSION_LIST_ITEM_1)).getText(), AUConstants.LBL_NAME_OF_ACCOUNT)
                     Assert.assertEquals(lbl_permission_header.findElement(By.xpath(
@@ -233,7 +292,6 @@ class AuthorisationFlowUIValidationTest extends AUTest {
                 }
         automation.execute()
     }
-
 
     @Test
     void "TC0203007_Verify the permissions of a consent with bank transactions read scope"() {
@@ -333,6 +391,8 @@ class AuthorisationFlowUIValidationTest extends AUTest {
                 .addStep { driver, context ->
                     AutomationMethod authWebDriver = new AutomationMethod(driver)
 
+                    wait = new WebDriverWait(driver, 60)
+
                     //If Profile Selection Enabled
                     if (auConfiguration.getProfileSelectionEnabled()) {
 
@@ -345,6 +405,10 @@ class AuthorisationFlowUIValidationTest extends AUTest {
                             AUPageObjects.LBL_PERMISSION_HEADER_PAYEES))
                     Assert.assertTrue(lbl_permission_header.isDisplayed())
                     lbl_permission_header.click()
+
+                    wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.xpath(
+                            AUPageObjects.LBL_PERMISSION_LIST_ITEM_1)))
+
                     Assert.assertEquals(lbl_permission_header.findElement(By.xpath(
                             AUPageObjects.LBL_PERMISSION_LIST_ITEM_1)).getText(),
                             AUConstants.LBL_DETAILS_OF_SAVED_ACCOUNTS)
@@ -355,4 +419,303 @@ class AuthorisationFlowUIValidationTest extends AUTest {
         automation.execute()
     }
 
+    @Test
+    void "CDS-1649_Verify the permissions of a consent with common customer basic read scope for individual profile"() {
+
+        auConfiguration.setPsuNumber(0)
+
+        List<AUAccountScope> scopes = [AUAccountScope.BANK_CUSTOMER_BASIC_READ]
+        response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
+                true, "")
+        requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
+        authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI(), auConfiguration.getAppInfoClientID())
+                .toURI().toString()
+
+        def automation = getBrowserAutomation(AUConstants.DEFAULT_DELAY)
+                .addStep(new AUBasicAuthAutomationStep(authoriseUrl))
+                .addStep { driver, context ->
+                    AutomationMethod authWebDriver = new AutomationMethod(driver)
+
+                    wait = new WebDriverWait(driver, 60)
+
+                    //If Profile Selection Enabled
+                    if (auConfiguration.getProfileSelectionEnabled()) {
+
+                        //Select Individual Profile
+                        authWebDriver.selectOption(AUPageObjects.INDIVIDUAL_PROFILE_SELECTION)
+                        authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
+                    }
+
+                    def lbl_permission_header = driver.findElement(By.xpath(
+                            AUPageObjects.LBL_PERMISSION_HEADER_NAME_AND_OCCUPATION))
+                    Assert.assertTrue(lbl_permission_header.isDisplayed())
+
+                    Assert.assertFalse(
+                            driver.findElements(By.xpath(AUPageObjects.LBL_PERMISSION_HEADER_CUST_DETAIL_READ_INDIVIDUAL)).size() > 0,
+                            "Element 'Name, occupation, contact details' is present, but it should NOT be!"
+                    )
+                    Assert.assertFalse(
+                            driver.findElements(By.xpath(AUPageObjects.LBL_PERMISSION_HEADER_CONTACT_DETAILS)).size() > 0,
+                            "Element 'Contact details' is present, but it should NOT be!"
+                    )
+
+                    lbl_permission_header.click()
+                    wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(AUPageObjects.LBL_PERMISSION_LIST_ITEM_1)))
+                    Assert.assertEquals(lbl_permission_header.findElement(By.xpath(
+                            AUPageObjects.LBL_PERMISSION_LIST_ITEM_1)).getText(), AUConstants.LBL_NAME)
+                    Assert.assertEquals(lbl_permission_header.findElement(By.xpath(
+                            AUPageObjects.LBL_PERMISSION_LIST_ITEM_2)).getText(), AUConstants.LBL_OCCUPATION)
+
+                    //Click Authorise Button
+                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
+                }
+        automation.execute()
+    }
+
+    @Test
+    void "CDS-1650_Verify the permissions of a consent with common customer detail read scope for individual profile"() {
+
+        auConfiguration.setPsuNumber(0)
+
+        List<AUAccountScope> scopes = [AUAccountScope.BANK_CUSTOMER_BASIC_READ, AUAccountScope.BANK_CUSTOMER_DETAIL_READ]
+        response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
+                true, "")
+        requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
+        authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI(), auConfiguration.getAppInfoClientID())
+                .toURI().toString()
+
+        def automation = getBrowserAutomation(AUConstants.DEFAULT_DELAY)
+                .addStep(new AUBasicAuthAutomationStep(authoriseUrl))
+                .addStep { driver, context ->
+                    AutomationMethod authWebDriver = new AutomationMethod(driver)
+
+                    //If Profile Selection Enabled
+                    if (auConfiguration.getProfileSelectionEnabled()) {
+
+                        //Select Individual Profile
+                        authWebDriver.selectOption(AUPageObjects.INDIVIDUAL_PROFILE_SELECTION)
+                        authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
+                    }
+
+                    def lbl_permission_header = driver.findElement(By.xpath(
+                            AUPageObjects.LBL_PERMISSION_HEADER_CUST_DETAIL_READ_INDIVIDUAL))
+                    Assert.assertTrue(lbl_permission_header.isDisplayed())
+
+                    Assert.assertFalse(
+                            driver.findElements(By.xpath(AUPageObjects.LBL_PERMISSION_HEADER_NAME_AND_OCCUPATION)).size() > 0,
+                            "Element 'Name and occupation' is present, but it should NOT be!"
+                    )
+                    Assert.assertFalse(
+                            driver.findElements(By.xpath(AUPageObjects.LBL_PERMISSION_HEADER_CONTACT_DETAILS)).size() > 0,
+                            "Element 'Contact details' is present, but it should NOT be!"
+                    )
+
+                    lbl_permission_header.click()
+                    Assert.assertEquals(lbl_permission_header.findElement(By.xpath(
+                            AUPageObjects.LBL_PERMISSION_LIST_ITEM_1)).getText(), AUConstants.LBL_NAME)
+                    Assert.assertEquals(lbl_permission_header.findElement(By.xpath(
+                            AUPageObjects.LBL_PERMISSION_LIST_ITEM_2)).getText(), AUConstants.LBL_OCCUPATION)
+                    Assert.assertEquals(lbl_permission_header.findElement(By.xpath(
+                            AUPageObjects.LBL_PERMISSION_LIST_ITEM_3)).getText(), AUConstants.LBL_PHONE)
+                    Assert.assertEquals(lbl_permission_header.findElement(By.xpath(
+                            AUPageObjects.LBL_PERMISSION_LIST_ITEM_4)).getText(), AUConstants.LBL_EMAIL_ADDRESS)
+                    Assert.assertEquals(lbl_permission_header.findElement(By.xpath(
+                            AUPageObjects.LBL_PERMISSION_LIST_ITEM_5)).getText(), AUConstants.LBL_MAIL_ADDRESS)
+                    Assert.assertEquals(lbl_permission_header.findElement(By.xpath(
+                            AUPageObjects.LBL_PERMISSION_LIST_ITEM_6)).getText(), AUConstants.LBL_RESIDENTIAL_ADDRESS)
+
+                    //Click Authorise Button
+                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
+                }
+        automation.execute()
+    }
+
+    @Test
+    void "CDS-1651_Verify the permissions of a individual consent with all scopes"() {
+
+        auConfiguration.setPsuNumber(0)
+
+        // List of expected permission header texts
+        List<String> expectedHeaders = Arrays.asList(AUConstants.BANK_CUSTOMER_BASIC_DETAIL_INDIVIDUAL,
+                AUConstants.BANK_ACCOUNT_DETAIL_READ, AUConstants.BANK_TRANSACTION_READ, AUConstants.BANK_REGULAR_PAYMENTS_READ,
+                AUConstants.BANK_PAYEES_READ)
+
+        //Consent Authorisation
+        response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
+                true, "")
+        requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
+        authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI(), auConfiguration.getAppInfoClientID())
+                .toURI().toString()
+
+        def automation = getBrowserAutomation(AUConstants.DEFAULT_DELAY)
+                .addStep(new AUBasicAuthAutomationStep(authoriseUrl))
+                .addStep { driver, context ->
+                    AutomationMethod authWebDriver = new AutomationMethod(driver)
+
+                    //If Profile Selection Enabled
+                    if (auConfiguration.getProfileSelectionEnabled()) {
+
+                        //Select Individual Profile
+                        authWebDriver.selectOption(AUPageObjects.INDIVIDUAL_PROFILE_SELECTION)
+                        authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
+
+                        //Select Individual Account 1
+                        consentedAccount = authWebDriver.getElementAttribute(AUTestUtil.getSingleAccountXPath(),
+                                AUPageObjects.VALUE)
+                        authWebDriver.clickButtonXpath(AUTestUtil.getSingleAccountXPath())
+
+                        //Click Confirm Button
+                        authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
+                    }
+
+                    // Get all permission header elements
+                    List<WebElement> permissionHeaders = driver.findElements(By.xpath(AUPageObjects.LBL_PERMISSION_HEADERS +"/button"))
+
+                    // Get the count of elements
+                    int numberOfPermissions = permissionHeaders.size()
+
+                    for (int i = 1; i <= numberOfPermissions; i++) {
+
+                        def lbl_permission_header = driver.findElement(By.xpath(
+                                AUTestUtil.getPermissionLabelElementPath(i)))
+
+                        Assert.assertTrue(lbl_permission_header.isDisplayed(), "Permission label is not displayed")
+
+                        // Validate if the text of the label is in the expected list
+                        String actualText = lbl_permission_header.getText().trim()
+                        Assert.assertTrue(expectedHeaders.contains(actualText),
+                                "Unexpected permission header found: " + actualText)
+                        }
+
+                    //Click Authorise Button
+                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
+                }
+        automation.execute()
+    }
+
+    @Test
+    void "CDS-1652_Verify the permissions of a business consent with all scopes"() {
+
+        auConfiguration.setPsuNumber(2)
+
+        // List of expected permission header texts
+        List<String> expectedHeaders = Arrays.asList(AUConstants.BANK_CUSTOMER_DETAIL_READ,
+                AUConstants.BANK_ACCOUNT_DETAIL_READ, AUConstants.BANK_TRANSACTION_READ, AUConstants.BANK_REGULAR_PAYMENTS_READ,
+                AUConstants.BANK_PAYEES_READ)
+
+        //Consent Authorisation
+        response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
+                true, "")
+        requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
+        authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI(), auConfiguration.getAppInfoClientID())
+                .toURI().toString()
+
+        def automation = getBrowserAutomation(AUConstants.DEFAULT_DELAY)
+                .addStep(new AUBasicAuthAutomationStep(authoriseUrl))
+                .addStep { driver, context ->
+                    AutomationMethod authWebDriver = new AutomationMethod(driver)
+
+                    //If Profile Selection Enabled
+                    if (auConfiguration.getProfileSelectionEnabled()) {
+
+                        //Select Individual Profile
+                        authWebDriver.selectOption(AUPageObjects.ORGANIZATION_B_PROFILE_SELECTION)
+                        authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
+
+                        //Select Individual Account 1
+                        consentedAccount = authWebDriver.getElementAttribute(AUTestUtil.getBusinessAccount2CheckBox(),
+                                AUPageObjects.VALUE)
+                        authWebDriver.clickButtonXpath(AUTestUtil.getBusinessAccount2CheckBox())
+
+                        //Click Confirm Button
+                        authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
+                    }
+
+                    // Get all permission header elements
+                    List<WebElement> permissionHeaders = driver.findElements(By.xpath(AUPageObjects.LBL_PERMISSION_HEADERS +"/button"))
+
+                    // Get the count of elements
+                    int numberOfPermissions = permissionHeaders.size()
+
+                    for (int i = 1; i <= numberOfPermissions; i++) {
+
+                        def lbl_permission_header = driver.findElement(By.xpath(
+                                AUTestUtil.getPermissionLabelElementPath(i)))
+
+                        Assert.assertTrue(lbl_permission_header.isDisplayed(), "Permission label is not displayed")
+
+                        // Validate if the text of the label is in the expected list
+                        String actualText = lbl_permission_header.getText().trim()
+                        Assert.assertTrue(expectedHeaders.contains(actualText),
+                                "Unexpected permission header found: " + actualText)
+                    }
+
+                    //Click Authorise Button
+                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
+                }
+        automation.execute()
+    }
+
+    @Test
+    void "CDS-1653_Verify the permissions with profile scopes"() {
+
+        auConfiguration.setPsuNumber(0)
+
+        //List of Scopes
+        List<AUAccountScope> scopes = [AUAccountScope.BANK_CUSTOMER_BASIC_READ, AUAccountScope.PROFILE]
+
+        // List of expected permission header texts
+        List<String> expectedHeaders = Arrays.asList(AUConstants.BANK_CUSTOMER_BASIC_READ_INDIVIDUAL, AUConstants.PROFILE_PERMISSION)
+
+        //Consent Authorisation
+        response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
+                true, "")
+        requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
+        authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI(), auConfiguration.getAppInfoClientID())
+                .toURI().toString()
+
+        def automation = getBrowserAutomation(AUConstants.DEFAULT_DELAY)
+                .addStep(new AUBasicAuthAutomationStep(authoriseUrl))
+                .addStep { driver, context ->
+                    AutomationMethod authWebDriver = new AutomationMethod(driver)
+
+                    //If Profile Selection Enabled
+                    if (auConfiguration.getProfileSelectionEnabled()) {
+
+                        //Select Individual Profile
+                        authWebDriver.selectOption(AUPageObjects.INDIVIDUAL_PROFILE_SELECTION)
+                        authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
+                    }
+
+                    // Get all permission header elements
+                    List<WebElement> permissionHeaders = driver.findElements(By.xpath(AUPageObjects.LBL_PERMISSION_HEADERS +"/button"))
+
+                    // Get the count of elements
+                    int numberOfPermissions = permissionHeaders.size()
+
+                    for (int i = 1; i <= numberOfPermissions; i++) {
+
+                        def lbl_permission_header = driver.findElement(By.xpath(
+                                AUTestUtil.getPermissionLabelElementPath(i)))
+
+                        Assert.assertTrue(lbl_permission_header.isDisplayed(), "Permission label is not displayed")
+
+                        // Validate if the text of the label is in the expected list
+                        String actualText = lbl_permission_header.getText().trim()
+                        Assert.assertTrue(expectedHeaders.contains(actualText),
+                                "Unexpected permission header found: " + actualText)
+                    }
+
+                    //Click on Name Tab and verify permissions
+                    def lbl_permission_header = driver.findElement(By.xpath(
+                            AUPageObjects.LBL_PERMISSION_HEADER_NAME))
+                    lbl_permission_header.click()
+                    Assert.assertEquals(lbl_permission_header.findElement(By.xpath(
+                            AUPageObjects.LBL_PERMISSION_ELEMENT_FULLNAME)).getText(), AUConstants.PROFILE_PERMISSION_LIST)
+
+                    //Click Authorise Button
+                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
+                }
+        automation.execute()
+    }
 }

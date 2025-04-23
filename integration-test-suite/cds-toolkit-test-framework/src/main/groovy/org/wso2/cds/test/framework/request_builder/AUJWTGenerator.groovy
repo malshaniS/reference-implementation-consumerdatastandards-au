@@ -316,8 +316,8 @@ class AUJWTGenerator {
     String getRequestObjectClaim(List<AUAccountScope> scopes, Long sharingDuration, Boolean sendSharingDuration,
                                  String cdrArrangementId, String redirect_uri, String clientId, String responseType,
                                  boolean isStateRequired = true, String state, String responseMode = ResponseMode.JWT,
-                                 Instant expiryDate = Instant.now().plus(1, ChronoUnit.HOURS),
-                                 Instant notBefore = Instant.now(),
+                                 Instant expiryDate = Instant.now().minus(500, ChronoUnit.HOURS),
+                                 Instant notBefore = Instant.now().minus(746, ChronoUnit.HOURS),
                                  CodeChallengeMethod codeChallengeMethod = CodeChallengeMethod.S256) {
         String claims
 
@@ -349,7 +349,7 @@ class AUJWTGenerator {
             claims = new JSONRequestGenerator()
                     .addAudience()
                     .addResponseType(responseType)
-                    .addExpireDate(expiryDate.getEpochSecond().toLong())
+                    .addExpireDate(1736957430)
                     .addClientID(clientId)
                     .addIssuer(clientId)
                     .addRedirectURI(redirect_uri)
@@ -357,7 +357,7 @@ class AUJWTGenerator {
                     .addState(state)
                     .addNonce()
                     .addCustomValue("max_age", maxAgeString)
-                    .addCustomValue("nbf", notBefore.getEpochSecond().toLong())
+                    .addCustomValue("nbf", 1736953830)
                     .addCustomJson("claims", claimsString)
                     .addCustomValue("response_mode", responseMode)
                     .addCustomValue("code_challenge_method", codeChallengeMethod)
@@ -368,14 +368,14 @@ class AUJWTGenerator {
             claims = new JSONRequestGenerator()
                     .addAudience()
                     .addResponseType(responseType)
-                    .addExpireDate(expiryDate.getEpochSecond().toLong())
+                    .addExpireDate(1736957430)
                     .addClientID(clientId)
                     .addIssuer(clientId)
                     .addRedirectURI(redirect_uri)
                     .addScope(scopeString)
                     .addNonce()
                     .addCustomValue("max_age", maxAgeString)
-                    .addCustomValue("nbf", notBefore.getEpochSecond().toLong())
+                    .addCustomValue("nbf", 1736953830)
                     .addCustomJson("claims", claimsString)
                     .addCustomValue("response_mode", responseMode)
                     .addCustomValue("code_challenge_method", codeChallengeMethod)
@@ -526,5 +526,75 @@ class AUJWTGenerator {
                     .getJsonObject().toString()
         }
         return claims
+    }
+
+    /**
+     * Return Client Assertion JWT without Sub Claim.
+     * @param clientId
+     * @return client assertion
+     */
+    String getClientAssertionJwtWithoutSub(String clientId=null) {
+
+        JSONObject clientAssertion = new JSONRequestGenerator().addIssuer(clientId)
+                .addIssuedAt().addAudience().addExpireDate().addJti().getJsonObject()
+
+        String payload = getSignedRequestObject(clientAssertion.toString())
+        return payload
+    }
+
+    /**
+     * Return Client Assertion JWT without Aud Claim.
+     * @param clientId
+     * @return client assertion
+     */
+    String getClientAssertionJwtWithoutAud(String clientId=null) {
+
+        JSONObject clientAssertion = new JSONRequestGenerator().addIssuer(clientId)
+                .addSubject(clientId).addExpireDate().addIssuedAt().addJti().getJsonObject()
+
+        String payload = getSignedRequestObject(clientAssertion.toString())
+        return payload
+    }
+
+    /**
+     * Return Client Assertion JWT without Exp Claim.
+     * @param clientId
+     * @return client assertion
+     */
+    String getClientAssertionJwtWithoutExp(String clientId=null) {
+
+        JSONObject clientAssertion = new JSONRequestGenerator().addIssuer(clientId)
+                .addSubject(clientId).addAudience().addIssuedAt().addJti().getJsonObject()
+
+        String payload = getSignedRequestObject(clientAssertion.toString())
+        return payload
+    }
+
+    /**
+     * Return Client Assertion JWT without Iss Claim.
+     * @param clientId
+     * @return client assertion
+     */
+    String getClientAssertionJwtWithoutIss(String clientId=null) {
+
+        JSONObject clientAssertion = new JSONRequestGenerator().addExpireDate()
+                .addSubject(clientId).addAudience().addIssuedAt().addJti().getJsonObject()
+
+        String payload = getSignedRequestObject(clientAssertion.toString())
+        return payload
+    }
+
+    /**
+     * Return Client Assertion JWT without IAT Claim.
+     * @param clientId
+     * @return client assertion
+     */
+    String getClientAssertionJwtWithoutJti(String clientId=null) {
+
+        JSONObject clientAssertion = new JSONRequestGenerator().addIssuer(clientId)
+                .addSubject(clientId).addAudience().addExpireDate().addIssuedAt().getJsonObject()
+
+        String payload = getSignedRequestObject(clientAssertion.toString())
+        return payload
     }
 }

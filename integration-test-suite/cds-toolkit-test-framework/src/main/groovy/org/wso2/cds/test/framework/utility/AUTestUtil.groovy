@@ -628,5 +628,11 @@ class AUTestUtil extends OBTestUtil {
 
         }
     }
+
+    static String getPermissionLabelElementPath(int permissionNumber) {
+
+        return AUPageObjects.LBL_PERMISSION_HEADERS + "[${permissionNumber}]" + "/button"
+
+    }
 }
 

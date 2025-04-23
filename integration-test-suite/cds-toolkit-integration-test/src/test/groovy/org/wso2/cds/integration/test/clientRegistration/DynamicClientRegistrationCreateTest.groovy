@@ -698,7 +698,71 @@ class DynamicClientRegistrationCreateTest extends AUTest{
         //TODO: Add Error Description after fixing https://github.com/wso2-enterprise/ob-compliance-toolkit-cds/issues/403
     }
 
-    @AfterClass (alwaysRun = true)
+    @Test
+    void "CDS-1641_Create application without iss"() {
+
+        AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
+        def registrationResponse = AURegistrationRequestBuilder
+                .buildRegistrationRequest(dcr.getMandatoryClaims().removeKeyValue(AUConstants.ISSUER_KEY).getClaimsJsonAsString())
+                .when()
+                .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
+
+        Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_400)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR),
+                AUConstants.INVALID_CLIENT_METADATA)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR_DESCRIPTION),
+                AUConstants.ERR_MANDATORY_ISS)
+    }
+
+    @Test
+    void "CDS-1642_Create application without iat"() {
+
+        AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
+        def registrationResponse = AURegistrationRequestBuilder
+                .buildRegistrationRequest(dcr.getMandatoryClaims().removeKeyValue(AUConstants.ISSUED_AT_KEY).getClaimsJsonAsString())
+                .when()
+                .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
+
+        Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_400)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR),
+                AUConstants.INVALID_CLIENT_METADATA)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR_DESCRIPTION),
+                AUConstants.ERR_MANDATORY_IAT)
+    }
+
+    @Test
+    void "CDS-1642_Create application without exp"() {
+
+        AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
+        def registrationResponse = AURegistrationRequestBuilder
+                .buildRegistrationRequest(dcr.getMandatoryClaims().removeKeyValue(AUConstants.EXPIRE_DATE_KEY).getClaimsJsonAsString())
+                .when()
+                .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
+
+        Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_400)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR),
+                AUConstants.INVALID_CLIENT_METADATA)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR_DESCRIPTION),
+                AUConstants.ERR_MANDATORY_EXP)
+    }
+
+    @Test
+    void "CDS-1640_Create application without jti"() {
+
+        AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
+        def registrationResponse = AURegistrationRequestBuilder
+                .buildRegistrationRequest(dcr.getMandatoryClaims().removeKeyValue(AUConstants.JTI_KEY).getClaimsJsonAsString())
+                .when()
+                .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
+
+        Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_400)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR),
+                AUConstants.INVALID_CLIENT_METADATA)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR_DESCRIPTION),
+                AUConstants.ERR_MANDATORY_JTI)
+    }
+
+//    @AfterClass (alwaysRun = true)
     void deleteApplication(){
         auConfiguration.setTppNumber(1)
         deleteApplicationIfExists(clientId)

@@ -41,9 +41,9 @@ class AUPageObjects {
     public static String CONSENT_CONFIRM_XPATH = "//input[@id='approve']"
     public static String CONSENT_AUTHORIZE_FLOW_BACK_XPATH = "//input[@id='back']"
 
-    public static String LBL_PERMISSION_HEADER_ORG_PROFILE = "//button[contains(text(),'Organisation profile')]"
-    public static String LBL_PERMISSION_HEADER_ACC_NAME = "//button[contains(text(),'Account name, type, and balance')]"
-    public static String LBL_PERMISSION_HEADER_ACC_BAL = "//button[contains(text(),'Account balance and details')]"
+    public static String LBL_PERMISSION_HEADER_ORG_PROFILE = "//button[text()='Organisation profile']"
+    public static String LBL_PERMISSION_HEADER_ACC_BASIC_READ = "//button[contains(text(),'Account name, type, and balance')]"
+    public static String LBL_PERMISSION_HEADER_ACC_DETAIL_READ = "//button[contains(text(),'Account balance and details')]"
     public static String LBL_PERMISSION_HEADER_TRA_DETAILS = "//button[contains(text(),'Transaction details')]"
     public static String LBL_PERMISSION_HEADER_PAYMENT_READ = "//button[contains(text(),'Direct debits and scheduled payments')]"
     public static String LBL_PERMISSION_HEADER_PAYEES = "//button[contains(text(),'Saved payees')]"
@@ -241,4 +241,15 @@ class AUPageObjects {
     static final String BTN_FINISH = "//input[@value='Finish']"
     static final String LBL_MESSAGE_BOX = "//div[@id='messagebox-info']/p"
     static final String BTN_MESSAGEBOX_OK = "//div[@class='ui-dialog-buttonpane']/button[text()='OK']"
+    public static String LBL_PERMISSION_HEADER_NAME_AND_OCCUPATION = "//button[text()='Name and occupation']"
+    public static String LBL_PERMISSION_HEADER_CONTACT_DETAILS = "//button[text()='Contact details']"
+    public static String LBL_PERMISSION_HEADER_CUST_DETAIL_READ_INDIVIDUAL = "//button[text()='Name, occupation, contact details']"
+    public static String LBL_PERMISSION_HEADER_CUST_DETAIL_READ_BUSINESS = "//button[text()='Organisation profile and contact details']"
+    public static String LBL_PERMISSION_HEADER_ORG_CONTACT_DETAILS = "//button[text()='Organisation contact details']"
+    public static String LBL_PERMISSION_HEADER_ACC_NUM_AND_FEATURES = "//button[contains(text(),'Account numbers and features')]"
+    public static String LBL_PERMISSION_HEADERS = "//h4[text()='Data requested:']/following-sibling::div"
+    public static String LBL_PERMISSION_HEADER_NAME = "//button[text()='Name']"
+    public static String LBL_PERMISSION_ELEMENT_FULLNAME = "//h4[text()='Data requested:']/following-sibling::div[2]//ul[@class='scopes-list padding']//li[1]"
+
+
 }

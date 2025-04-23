@@ -41,8 +41,8 @@ class SqlQuery {
             case "MySQL":
             case "mysql":
                 query = "SELECT alr.RESPONSE_LATENCY as RESPONSE_TIME, api.ELECTED_RESOURCE, api.STATUS_CODE, api.CUSTOMER_STATUS \n" +
-                        "FROM openbank_ob_reporting_statsdb.API_INVOCATION_RAW_DATA api, " +
-                        "openbank_ob_reporting_statsdb.API_LATENCY_RAW_DATA alr\n" +
+                        "FROM ha_openbank_ob_reporting_statsdb.API_INVOCATION_RAW_DATA api, " +
+                        "ha_openbank_ob_reporting_statsdb.API_LATENCY_RAW_DATA alr\n" +
                         "WHERE api.MESSAGE_ID = alr.MESSAGE_ID AND api.`TIMESTAMP` BETWEEN \"$executionStartTime\" " +
                         "AND \"$executionEndTime\" \n" +
                         "ORDER BY api.`TIMESTAMP` DESC;"
@@ -70,7 +70,7 @@ class SqlQuery {
             case "MySQL":
             case "mysql":
                 query = "SELECT x.TYPE, x.ASPECT, x.TIME_TO - x.TIME_FROM as OUTAGE_TIME \n" +
-                        "FROM openbank_ob_reporting_statsdb.SERVER_OUTAGES_RAW_DATA x \n" +
+                        "FROM ha_openbank_ob_reporting_statsdb.SERVER_OUTAGES_RAW_DATA x \n" +
                         "WHERE x.TIME_TO BETWEEN \"$outageStartTime\" AND \"$outageEndTime\" " +
                         "ORDER BY x.TIME_FROM DESC;"
                 break

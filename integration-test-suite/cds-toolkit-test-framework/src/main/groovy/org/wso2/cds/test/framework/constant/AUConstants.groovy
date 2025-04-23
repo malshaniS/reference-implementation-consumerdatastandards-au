@@ -116,14 +116,14 @@ class AUConstants extends OBConstants {
     public static final String GET_BUSINESS_ACCOUNT_TRANSACTIONS = SINGLE_BUSINESS_ACCOUNT_PATH + "/transactions"
 
     public static final String BANK_CUSTOMER_BASIC_READ = "Organisation profile and contact details"
-    public static final String BANK_CUSTOMER_DETAIL_READ = "Organisation profile and contact details*‡"
+    public static final String BANK_CUSTOMER_DETAIL_READ = "Organisation profile and contact details"
     public static final String BANK_ACCOUNT_BASIC_READ = "Account name, type, and balance"
-    public static final String BANK_ACCOUNT_DETAIL_READ = "Account balance and details‡"
+    public static final String BANK_ACCOUNT_DETAIL_READ = "Account balance and details"
     public static final String BANK_TRANSACTION_READ = "Transaction details"
     public static final String BANK_PAYEES_READ = "Saved payees"
     public static final String BANK_REGULAR_PAYMENTS_READ = "Direct debits and scheduled payments"
     public static final String BANK_CUSTOMER_BASIC_READ_INDIVIDUAL = "Name and occupation"
-    public static final String BANK_CUSTOMER_BASIC_DETAIL_INDIVIDUAL = "Name, occupation, contact details ‡"
+    public static final String BANK_CUSTOMER_BASIC_DETAIL_INDIVIDUAL = "Name, occupation, contact details"
 
     public static final String LBL_OTP_TIMEOUT = "//div[@id='otpTimeout']"
     public static final String LBL_FOOTER_DESCRIPTION = "//div[@class='ui segment']/div/form/div/div"
@@ -381,6 +381,7 @@ class AUConstants extends OBConstants {
     public static final String INCORRECT_ACC_ID = "1234567"
     public static final String QUERY_PARAM_USERID = "userId"
     public static final String QUERY_PARAM_ACCID = "accountId"
+    public static final String QUERY_PARAM_CONSENTIDS = "consentIDs"
     public static final String PARAM_PERMISSION_STATUS = "permissionStatus"
 
     public static final String TPP_ERROR_CATEGORY = "tppMessages[0].category"
@@ -584,13 +585,13 @@ class AUConstants extends OBConstants {
     static final String DATA_SESSION_COUNT_CURRENTDAY = "data.sessionCount.currentDay"
 
     static final String CUSTOMER_PRESENT = "customer-present"
-    static final ABANDON_WAIT_TIME = 78000
-    static final AUTH_CODE_EXPIRATION_TIME = 110001
+    static final ABANDON_WAIT_TIME = 60001
+    static final AUTH_CODE_EXPIRATION_TIME = 220001
     public static final String CODE_EXPIRE_ERROR_MSG = "Expired or Revoked authorization code received from token request"
     public static final String CALLBACK_MISMATCH = "Callback url mismatch"
     public static final String LOCALHOST = "localhost"
 
-    public static String REPORTING_DBNAME = "openbank_ob_reporting_statsdb"
+    public static String REPORTING_DBNAME = "ha_openbank_ob_reporting_statsdb"
     public static String UNAUTHENTICATED = "Unauthenticated"
     public static String HIGH_PRIORITY = "High Priority"
     public static String LOW_PRIORITY = "Low Priority"
@@ -617,6 +618,18 @@ class AUConstants extends OBConstants {
     public static final String CONTENT_TYPE_APPLICATION_SCIM_JSON = "application/scim+json"
     public static final String SUBSCRIBER_ROLE = "Internal/subscriber"
     public static final String PUBLISHER_ROLE = "Internal/publisher"
+    public static final String REST_API_GET_AUTHENTICATORS_ENDPOINT = "/api/server/v1/identity-providers/meta/federated-authenticators"
+    public static final String SMS_OTP_AUTHENTICATOR_NAME = "SMSOTP"
+    public static final String OPENID_NOT_PRESENT = "Invalid scope: openid scope not present"
+    public static final String ERR_MANDATORY_JTI = "Required parameter jti cannot be null"
+    public static final String ERR_MANDATORY_ISS = "Required parameter issuer cannot be null"
+    public static final String ERR_MANDATORY_IAT = "Required parameter iat cannot be null"
+    public static final String ERR_MANDATORY_EXP = "Required parameter exp cannot be null"
+    public static final String ERR_MANDATORY_AUD = "Required parameter audience cannot be null"
+
+    public static final String ERROR_CODE_INVALID_JTI = "urn:au-cds:error:cds-all:Field/InvalidJti"
+    public static final String PROFILE_PERMISSION = "Name"
+    public static final String PROFILE_PERMISSION_LIST = "Full name and title(s)"
 
 }
 

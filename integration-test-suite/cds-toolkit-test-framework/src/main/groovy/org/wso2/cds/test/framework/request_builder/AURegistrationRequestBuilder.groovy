@@ -386,5 +386,13 @@ class AURegistrationRequestBuilder extends OBRegistrationRequestBuilder {
                 .baseUri(AUTestUtil.getBaseUrl(AUConstants.DCR_BASE_PATH_TYPE))
     }
 
+    /**
+     * Get mandatory registration request claims.
+     * @return request claims
+     */
+     OBRegistrationRequestBuilder getMandatoryClaims() {
+        return regularClaims.addIssuer(getSoftwareID()).addSoftwareStatement(getSSA()).addIDTokenEncResponseAlg()
+                .addIDTokenEncResponseEnc().removeKeyValue(AUConstants.RESPONSE_TYPES_KEY).addResponseType(ResponseType.CODE.toString())
+    }
 }
 

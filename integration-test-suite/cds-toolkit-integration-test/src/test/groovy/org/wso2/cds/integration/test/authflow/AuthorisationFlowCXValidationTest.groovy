@@ -18,6 +18,10 @@
 
 package org.wso2.cds.integration.test.authflow
 
+import org.openqa.selenium.Alert
+import org.openqa.selenium.WebElement
+import org.openqa.selenium.support.ui.ExpectedConditions
+import org.openqa.selenium.support.ui.WebDriverWait
 import org.wso2.cds.test.framework.AUTest
 import org.wso2.cds.test.framework.automation.consent.AUBasicAuthAutomationStep
 import org.wso2.cds.test.framework.constant.AUAccountProfile
@@ -30,6 +34,7 @@ import org.openqa.selenium.By
 import org.testng.Assert
 import org.testng.annotations.BeforeClass
 import org.testng.annotations.Test
+import org.wso2.openbanking.test.framework.automation.NavigationAutomationStep
 
 
 /**
@@ -172,7 +177,7 @@ class AuthorisationFlowCXValidationTest extends AUTest {
                     authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
 
                     def lbl_permission_header = driver.findElement(By.xpath(
-                            AUPageObjects.LBL_PERMISSION_HEADER_ACC_NAME))
+                            AUPageObjects.LBL_PERMISSION_HEADER_ACC_BASIC_READ))
                     Assert.assertTrue(lbl_permission_header.isDisplayed())
                     lbl_permission_header.click()
                     Assert.assertEquals(lbl_permission_header.findElement(By.xpath(
@@ -210,7 +215,7 @@ class AuthorisationFlowCXValidationTest extends AUTest {
                     authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
 
                     def lbl_permission_header = driver.findElement(By.xpath(
-                            AUPageObjects.LBL_PERMISSION_HEADER_ACC_BAL))
+                            AUPageObjects.LBL_PERMISSION_HEADER_ACC_DETAIL_READ))
                     Assert.assertTrue(lbl_permission_header.isDisplayed())
                     lbl_permission_header.click()
                     Assert.assertEquals(lbl_permission_header.findElement(By.xpath(
@@ -358,4 +363,199 @@ class AuthorisationFlowCXValidationTest extends AUTest {
         automation.execute()
     }
 
+    @Test
+    void "CDS-1661_Reload Login Page in Authorization web app"() {
+
+        auConfiguration.setPsuNumber(0)
+
+        response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
+                true, "")
+        requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
+        authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI(), auConfiguration.getAppInfoClientID())
+                .toURI().toString()
+
+        def automation = getBrowserAutomation(AUConstants.DEFAULT_DELAY)
+                .addStep(new NavigationAutomationStep(authoriseUrl, 10))
+                .addStep { driver, context ->
+
+                    driver.navigate().refresh()
+
+                    WebDriverWait wait = new WebDriverWait(driver, 30)
+                    WebElement btnNext = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(
+                            AUPageObjects.AU_AUTH_SIGNIN_XPATH)))
+                    Assert.assertFalse(btnNext.isEnabled())
+                }
+        automation.execute()
+
+    }
+
+    @Test
+    void "CDS-1662_Reload Second Factor Authentication Page in Authorization web app"() {
+
+        auConfiguration.setPsuNumber(0)
+
+        response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
+                true, "")
+        requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
+        authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI(), auConfiguration.getAppInfoClientID())
+                .toURI().toString()
+
+        def automation = getBrowserAutomation(AUConstants.DEFAULT_DELAY)
+                .addStep(new NavigationAutomationStep(authoriseUrl, 10))
+                .addStep { driver, context ->
+
+                    AutomationMethod authDriver = new AutomationMethod(driver)
+
+                    authDriver.executeTextField(AUPageObjects.AU_USERNAME_FIELD_ID, auConfiguration.getUserPSUName())
+
+                    WebDriverWait wait = new WebDriverWait(driver, 30)
+                    WebElement btnNext = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(
+                            AUPageObjects.AU_AUTH_SIGNIN_XPATH)))
+                    btnNext.click()
+
+                    driver.navigate().refresh()
+
+                    authDriver.executeSMSOTP(AUPageObjects.AU_LBL_SMSOTP_AUTHENTICATOR, AUPageObjects.AU_TXT_OTP_CODE_ID,
+                            AUConstants.AU_OTP_CODE)
+                    authDriver.clickButtonXpath(AUPageObjects.AU_BTN_AUTHENTICATE)
+
+                    //If Profile Selection Enabled
+                    if (auConfiguration.getProfileSelectionEnabled()) {
+
+                        WebElement chkProfile = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(
+                                AUPageObjects.AU_AUTH_SIGNIN_XPATH)))
+                        Assert.assertTrue(chkProfile.isDisplayed())
+                    }
+                }
+        automation.execute()
+    }
+
+    @Test
+    void "CDS-1663_Reload Profile selection Page in Authorization web app"() {
+
+        auConfiguration.setPsuNumber(0)
+
+        response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
+                true, "")
+        requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
+        authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI(), auConfiguration.getAppInfoClientID())
+                .toURI().toString()
+
+        def automation = getBrowserAutomation(AUConstants.DEFAULT_DELAY)
+                .addStep(new AUBasicAuthAutomationStep(authoriseUrl))
+                .addStep { driver, context ->
+
+                    AutomationMethod authWebDriver = new AutomationMethod(driver)
+                    WebDriverWait wait = new WebDriverWait(driver, 30)
+
+                    //If Profile Selection Enabled
+                    if (auConfiguration.getProfileSelectionEnabled()) {
+
+                        //Refresh the page
+                        driver.navigate().refresh()
+
+                        //Select Individual Profile
+                        authWebDriver.selectOption(AUPageObjects.INDIVIDUAL_PROFILE_SELECTION)
+                        authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
+
+                        WebElement chkAccountId = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(
+                                AUPageObjects.SINGLE_ACCOUNT_XPATH)))
+                        Assert.assertTrue(chkAccountId.isDisplayed())
+                    }
+                }
+        automation.execute()
+    }
+
+    @Test
+    void "CDS-1664_Reload Accounts selection Page in Authorization web app"() {
+
+        auConfiguration.setPsuNumber(0)
+
+        response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
+                true, "")
+        requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
+        authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI(), auConfiguration.getAppInfoClientID())
+                .toURI().toString()
+
+        def automation = getBrowserAutomation(AUConstants.DEFAULT_DELAY)
+                .addStep(new AUBasicAuthAutomationStep(authoriseUrl))
+                .addStep { driver, context ->
+
+                    AutomationMethod authWebDriver = new AutomationMethod(driver)
+                    WebDriverWait wait = new WebDriverWait(driver, 30)
+
+                    //If Profile Selection Enabled
+                    if (auConfiguration.getProfileSelectionEnabled()) {
+
+                        //Select Individual Profile
+                        authWebDriver.selectOption(AUPageObjects.INDIVIDUAL_PROFILE_SELECTION)
+                        authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
+
+                        //Refresh the page
+                        driver.navigate().refresh()
+
+                        // Switch to alert and accept (Resend)
+                        Alert alert = driver.switchTo().alert()
+                        alert.accept()
+
+                        consentedAccount = authWebDriver.getElementAttribute(AUTestUtil.getSingleAccountXPath(),
+                                AUPageObjects.VALUE)
+                        authWebDriver.clickButtonXpath(AUTestUtil.getSingleAccountXPath())
+
+                        authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
+
+                        WebElement chkProfile = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(
+                                AUPageObjects.CONSENT_CONFIRM_XPATH)))
+                        Assert.assertTrue(chkProfile.isDisplayed())
+                    }
+                }
+        automation.execute()
+    }
+
+    @Test
+    void "CDS-1665_Reload Consent Page in Authorization web app"() {
+
+        auConfiguration.setPsuNumber(0)
+
+        response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
+                true, "")
+        requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
+        authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI(), auConfiguration.getAppInfoClientID())
+                .toURI().toString()
+
+        def automation = getBrowserAutomation(AUConstants.DEFAULT_DELAY)
+                .addStep(new AUBasicAuthAutomationStep(authoriseUrl))
+                .addStep { driver, context ->
+
+                    AutomationMethod authWebDriver = new AutomationMethod(driver)
+                    WebDriverWait wait = new WebDriverWait(driver, 30)
+
+                    //If Profile Selection Enabled
+                    if (auConfiguration.getProfileSelectionEnabled()) {
+
+                        //Select Individual Profile
+                        authWebDriver.selectOption(AUPageObjects.INDIVIDUAL_PROFILE_SELECTION)
+                        authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
+
+                        consentedAccount = authWebDriver.getElementAttribute(AUTestUtil.getSingleAccountXPath(),
+                                AUPageObjects.VALUE)
+                        authWebDriver.clickButtonXpath(AUTestUtil.getSingleAccountXPath())
+
+                        //Click Confirm Button
+                        authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
+
+                        //Refresh the page
+                        driver.navigate().refresh()
+
+                        // Switch to alert and accept (Resend)
+                        Alert alert = driver.switchTo().alert()
+                        alert.accept()
+
+                        //Click Authorise Button
+                        authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
+                    }
+                }.execute()
+
+        authorisationCode = AUTestUtil.getCodeFromJwtResponse(automation.currentUrl.get())
+    }
 }

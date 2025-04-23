@@ -18,6 +18,7 @@
 
 package org.wso2.cds.integration.test.accounts
 
+import org.testng.Assert
 import org.wso2.cds.test.framework.AUTest
 import org.wso2.cds.test.framework.constant.AUAccountProfile
 import org.wso2.cds.test.framework.constant.AUConstants

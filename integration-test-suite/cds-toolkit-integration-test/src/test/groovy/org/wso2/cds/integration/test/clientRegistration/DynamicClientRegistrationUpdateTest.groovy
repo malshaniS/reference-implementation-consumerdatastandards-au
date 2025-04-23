@@ -261,6 +261,96 @@ class DynamicClientRegistrationUpdateTest extends AUTest{
         Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_501)
     }
 
+    @Test
+    void "CDS-1643_Update registration details without iss"() {
+
+        auConfiguration.setTppNumber(1)
+        AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
+        def registrationResponse = AURegistrationRequestBuilder
+                .buildRegistrationRequest(dcr.getMandatoryClaims().removeKeyValue(AUConstants.ISSUER_KEY).getClaimsJsonAsString())
+                .header(AUConstants.AUTHORIZATION_HEADER_KEY, "${AUConstants.AUTHORIZATION_BEARER_TAG}${accessToken}")
+                .when()
+                .put(registrationPath + clientId)
+
+        Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_400)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR),
+                AUConstants.INVALID_CLIENT_METADATA)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR_DESCRIPTION),
+                AUConstants.ERR_MANDATORY_ISS)
+    }
+
+    @Test
+    void "CDS-1645_Update registration details without iat"() {
+
+        auConfiguration.setTppNumber(1)
+        AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
+        def registrationResponse = AURegistrationRequestBuilder
+                .buildRegistrationRequest(dcr.getMandatoryClaims().removeKeyValue(AUConstants.ISSUED_AT_KEY).getClaimsJsonAsString())
+                .header(AUConstants.AUTHORIZATION_HEADER_KEY, "${AUConstants.AUTHORIZATION_BEARER_TAG}${accessToken}")
+                .when()
+                .put(registrationPath + clientId)
+
+        Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_400)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR),
+                AUConstants.INVALID_CLIENT_METADATA)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR_DESCRIPTION),
+                AUConstants.ERR_MANDATORY_IAT)
+    }
+
+    @Test
+    void "CDS-1646_Update registration details without exp"() {
+
+        auConfiguration.setTppNumber(1)
+        AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
+        def registrationResponse = AURegistrationRequestBuilder
+                .buildRegistrationRequest(dcr.getMandatoryClaims().removeKeyValue(AUConstants.EXPIRE_DATE_KEY).getClaimsJsonAsString())
+                .header(AUConstants.AUTHORIZATION_HEADER_KEY, "${AUConstants.AUTHORIZATION_BEARER_TAG}${accessToken}")
+                .when()
+                .put(registrationPath + clientId)
+
+        Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_400)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR),
+                AUConstants.INVALID_CLIENT_METADATA)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR_DESCRIPTION),
+                AUConstants.ERR_MANDATORY_EXP)
+    }
+
+    @Test
+    void "CDS-1647_Update registration details without jti"() {
+
+        auConfiguration.setTppNumber(1)
+        AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
+        def registrationResponse = AURegistrationRequestBuilder
+                .buildRegistrationRequest(dcr.getMandatoryClaims().removeKeyValue(AUConstants.JTI_KEY).getClaimsJsonAsString())
+                .header(AUConstants.AUTHORIZATION_HEADER_KEY, "${AUConstants.AUTHORIZATION_BEARER_TAG}${accessToken}")
+                .when()
+                .put(registrationPath + clientId)
+
+        Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_400)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR),
+                AUConstants.INVALID_CLIENT_METADATA)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR_DESCRIPTION),
+                AUConstants.ERR_MANDATORY_JTI)
+    }
+
+    @Test
+    void "CDS-1648_Update registration details without Aud claim"() {
+
+        auConfiguration.setTppNumber(1)
+        AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
+        def registrationResponse = AURegistrationRequestBuilder
+                .buildRegistrationRequest(dcr.getMandatoryClaims().removeKeyValue(AUConstants.AUDIENCE_KEY).getClaimsJsonAsString())
+                .header(AUConstants.AUTHORIZATION_HEADER_KEY, "${AUConstants.AUTHORIZATION_BEARER_TAG}${accessToken}")
+                .when()
+                .put(registrationPath + clientId)
+
+        Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_400)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR),
+                AUConstants.INVALID_CLIENT_METADATA)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR_DESCRIPTION),
+                AUConstants.ERR_MANDATORY_AUD)
+    }
+
     @AfterClass (alwaysRun = true)
     void deleteApplication(){
         auConfiguration.setTppNumber(1)

@@ -104,6 +104,7 @@ class AUTest extends OBTest {
     public int[] performanceMetrics
     public int[] avgResponseMetrics
     public int[] totalResources
+    public def consentResponse
 
     @BeforeClass(alwaysRun = true)
     void "Initialize Test Suite"() {
@@ -443,7 +444,7 @@ class AUTest extends OBTest {
 //                            AUPageObjects.VALUE)
 //                    authWebDriver.clickButtonXpath(AUTestUtil.getBusinessAccount3CheckBox())
 //                }
-            } else {
+            } else if (profiles == AUAccountProfile.INDIVIDUAL){
                 //Select Individual Profile
                 authWebDriver.selectOption(AUPageObjects.INDIVIDUAL_PROFILE_SELECTION)
                 authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
@@ -2435,5 +2436,47 @@ class AUTest extends OBTest {
 
         // Get Code From URL
         return AUTestUtil.getCodeFromJwtResponse(automation.currentUrl.get())
+    }
+
+    /**
+     * Do Admin Search Request.
+     */
+    Response doAdminSearchByArrengementId(String arrangementId) {
+
+        response = AURestAsRequestBuilder.buildBasicRequest()
+                .header(AUConstants.AUTHORIZATION_HEADER_KEY, AUConstants.BASIC_HEADER_KEY + " " +
+                        Base64.encoder.encodeToString(
+                                "${auConfiguration.getUserBasicAuthName()}:${auConfiguration.getUserBasicAuthPWD()}"
+                                        .getBytes(Charset.forName("UTF-8"))))
+                .queryParam("consentIDs", arrangementId)
+                .baseUri(auConfiguration.getServerAuthorisationServerURL())
+                .get("${AUConstants.CONSENT_SEARCH_ENDPOINT}")
+
+        return response
+    }
+
+    /**
+     * Is Consent Attributes Present in Response.
+     * @param response
+     * @param consentId
+     * @return
+     */
+    boolean isConsentAttributesPresentInResponse(Response response) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper()
+            JsonNode rootNode = objectMapper.readTree(response.asString())
+
+            // Get the consentAttributes object
+            JsonNode consentAttributes = rootNode.path("data").get(0).path("consentAttributes")
+
+            // Check that the consentAttributes is not empty
+            if(consentAttributes.size() > 0) {
+                return true
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error processing JSON response", e)
+        }
+        return false // consentId not found
     }
 }

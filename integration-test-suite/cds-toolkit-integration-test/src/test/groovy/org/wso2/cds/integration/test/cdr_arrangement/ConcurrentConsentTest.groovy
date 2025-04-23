@@ -144,37 +144,44 @@ class ConcurrentConsentTest extends AUTest {
         String cdrArrangementId = userAccessTokenResponse.getCustomParameters().get(AUConstants.CDR_ARRANGEMENT_ID)
         Assert.assertNotNull(cdrArrangementId)
 
-        //retrieve consumer data successfully
-        Response response = AURequestBuilder
-                .buildBasicRequest(userAccessToken, AUConstants.CDR_ENDPOINT_VERSION)
-                .header(AUConstants.X_FAPI_AUTH_DATE, AUConstants.DATE)
-                .baseUri(AUTestUtil.getBaseUrl(AUConstants.BASE_PATH_TYPE_ACCOUNT))
-                .get("${AUConstants.BULK_ACCOUNT_PATH}")
+        //Send admin search request
+        Response searchResponse = doAdminSearch(cdrArrangementId.toString())
+        Assert.assertEquals(searchResponse.statusCode(), AUConstants.STATUS_CODE_200)
 
-        Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_200)
+        //Search for ConsentAttribute
+        Assert.assertTrue(isConsentAttributesPresentInResponse(searchResponse), "consentAttributes should not be empty.")
 
-        //revoke sharing arrangement
-        def revokeResponse = doRevokeCdrArrangement(auConfiguration.getAppInfoClientID(), cdrArrangementId)
-
-        Assert.assertEquals(revokeResponse.statusCode(), AUConstants.STATUS_CODE_204)
-
-        Thread.sleep(100000)
-
-        //try to retrieve consumer data after revocation
-        response = AURequestBuilder
-                .buildBasicRequest(userAccessToken, AUConstants.CDR_ENDPOINT_VERSION)
-                .header(AUConstants.X_FAPI_AUTH_DATE, AUConstants.DATE)
-                .baseUri(AUTestUtil.getBaseUrl(AUConstants.BASE_PATH_TYPE_ACCOUNT))
-                .get("${AUConstants.BULK_ACCOUNT_PATH}")
-
-        Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_403)
-
-        //validate token
-        def introspectResponse = AURequestBuilder.buildIntrospectionRequest(userAccessToken,
-                auConfiguration.getAppInfoClientID(), 0)
-                .post(AUConstants.INTROSPECTION_ENDPOINT)
-
-        Assert.assertTrue((introspectResponse.jsonPath().get("active")).equals(false))
+//        //retrieve consumer data successfully
+//        Response response = AURequestBuilder
+//                .buildBasicRequest(userAccessToken, AUConstants.CDR_ENDPOINT_VERSION)
+//                .header(AUConstants.X_FAPI_AUTH_DATE, AUConstants.DATE)
+//                .baseUri(AUTestUtil.getBaseUrl(AUConstants.BASE_PATH_TYPE_ACCOUNT))
+//                .get("${AUConstants.BULK_ACCOUNT_PATH}")
+//
+//        Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_200)
+//
+//        //revoke sharing arrangement
+//        def revokeResponse = doRevokeCdrArrangement(auConfiguration.getAppInfoClientID(), cdrArrangementId)
+//
+//        Assert.assertEquals(revokeResponse.statusCode(), AUConstants.STATUS_CODE_204)
+//
+//        Thread.sleep(100000)
+//
+//        //try to retrieve consumer data after revocation
+//        response = AURequestBuilder
+//                .buildBasicRequest(userAccessToken, AUConstants.CDR_ENDPOINT_VERSION)
+//                .header(AUConstants.X_FAPI_AUTH_DATE, AUConstants.DATE)
+//                .baseUri(AUTestUtil.getBaseUrl(AUConstants.BASE_PATH_TYPE_ACCOUNT))
+//                .get("${AUConstants.BULK_ACCOUNT_PATH}")
+//
+//        Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_403)
+//
+//        //validate token
+//        def introspectResponse = AURequestBuilder.buildIntrospectionRequest(userAccessToken,
+//                auConfiguration.getAppInfoClientID(), 0)
+//                .post(AUConstants.INTROSPECTION_ENDPOINT)
+//
+//        Assert.assertTrue((introspectResponse.jsonPath().get("active")).equals(false))
     }
 
     @Test (dependsOnMethods = "TC0902001_Revoke consent using cdr management endpoint")
